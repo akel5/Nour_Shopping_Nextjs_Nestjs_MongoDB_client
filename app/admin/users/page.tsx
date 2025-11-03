@@ -35,7 +35,7 @@ export default function AdminUsersPage() {
       const fetchUsers = async () => {
         try {
           setError(null);
-          const response = await fetch('http://localhost:3001/users', {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
             headers: {
               'Authorization': `Bearer ${token}`, // שליחת הטוקן
             },
@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
     }
     if (confirm('האם אתה בטוח שברצונך למחוק משתמש זה?')) {
       try {
-        await fetch(`http://localhost:3001/users/${userId}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` },
         });
@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
     const newRole = currentRole === 'user' ? 'subadmin' : 'user';
 
     try {
-        const response = await fetch(`http://localhost:3001/users/${userId}/role`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/role`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -60,7 +60,7 @@ export default function AdminOrdersPage() {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await fetch('http://localhost:3001/orders', {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -81,7 +81,7 @@ export default function AdminOrdersPage() {
   // 3. פונקציה לעדכון סטטוס הזמנה
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      const response = await fetch(`http://localhost:3001/orders/${orderId}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

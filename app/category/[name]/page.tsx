@@ -96,7 +96,7 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:3001/products/category/${encodeURIComponent(categoryName)}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/category/${encodeURIComponent(categoryName)}`);
         if (!response.ok) throw new Error('שליפת המוצרים נכשלה');
         const data = await response.json();
         setProducts(data);
@@ -132,8 +132,8 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
     
     const isEditMode = productId !== null;
     const url = isEditMode
-      ? `http://localhost:3001/products/${productId}`
-      : `http://localhost:3001/products`;
+      ? `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/products`;
       
     const method = isEditMode ? 'PATCH' : 'POST';
 
@@ -172,7 +172,7 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
   const handleDelete = async (productId: string) => {
     if (confirm('האם אתה בטוח שברצונך למחוק מוצר זה?')) {
       try {
-        const response = await fetch(`http://localhost:3001/products/${productId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` },
         });

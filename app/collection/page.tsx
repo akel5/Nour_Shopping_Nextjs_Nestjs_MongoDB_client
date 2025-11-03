@@ -94,7 +94,7 @@ export default function CollectionPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:3001/products`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`);
         if (!response.ok) throw new Error('שליפת המוצרים נכשלה');
         const data = await response.json();
         setProducts(data);
@@ -126,7 +126,7 @@ export default function CollectionPage() {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:3001/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ export default function CollectionPage() {
   const handleDelete = async (productId: string) => {
     if (confirm('האם אתה בטוח שברצונך למחוק מוצר זה?')) {
       try {
-        const response = await fetch(`http://localhost:3001/products/${productId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` },
         });
