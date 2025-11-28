@@ -100,13 +100,13 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         if (!response.ok) throw new Error('שליפת המוצרים נכשלה');
         const data = await response.json();
         setProducts(data);
-      } catch (err: unknown) { // 1. משנים ל-unknown
-  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
-    setError(err.message);
-  } else {
-    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
-  }
-} finally {
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('אירעה שגיאה בטעינת המוצרים');
+        }
+      } finally {
         setIsLoading(false);
       }
     };
@@ -166,13 +166,14 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
       
       handleCloseModal();
 
-    } catch (err: unknown) { // 1. משנים ל-unknown
-  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
-    setError(err.message);
-  } else {
-    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
-  }
-} finally {
+    } catch (err: unknown) {
+      // תיקון: שימוש ב-unknown ו-instanceof Error
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('אירעה שגיאה בשמירת המוצר');
+      }
+    } finally {
       setIsModalLoading(false);
     }
   };
@@ -187,8 +188,13 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         if (!response.ok) throw new Error('המחיקה נכשלה');
         setProducts(products.filter(p => p._id !== productId));
         alert('המוצר נמחק בהצלחה');
-      } catch (err: any) {
-        alert(`שגיאה במחיקה: ${err.message}`);
+      } catch (err: unknown) {
+        // תיקון: שימוש ב-unknown ו-instanceof Error
+        if (err instanceof Error) {
+          alert(`שגיאה במחיקה: ${err.message}`);
+        } else {
+          alert('שגיאה במחיקה: אירעה שגיאה לא צפויה');
+        }
       }
     }
   };
@@ -207,8 +213,6 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         />
       )}
     
-      {/* התפריט הראשי נמצא ב-layout, לכן אין כאן <header> */}
-
       {/* גוף העמוד */}
       <main className="container mx-auto p-4 py-10">
         {/* כותרת וכפתור הוספה */}

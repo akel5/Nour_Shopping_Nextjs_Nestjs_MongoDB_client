@@ -79,16 +79,16 @@ export default function CartPage() {
         alert('ההזמנה נוצרה בהצלחה!');
       }
 
-      // clearCart(); // <-- ⛔️ השורה הזו נמחקה מכאן ⛔️
-      router.push('/order-success'); // העברה לדף אישור הזמנה
+      // clearCart(); // מבוצע בדף ההצלחה
+      router.push('/order-success'); 
 
-    } catch (err: unknown) { // 1. משנים ל-unknown
-  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
-    setError(err.message);
-  } else {
-    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
-  }
-} finally {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('אירעה שגיאה לא צפויה');
+      }
+    } finally {
       setIsLoading(false);
     }
   };
@@ -111,7 +111,7 @@ export default function CartPage() {
         <form onSubmit={handleCreateOrder} className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           <div className="md:col-span-2 space-y-4">
-            {cart.map((item: CartItem) => ( // הוספנו טיפוס
+            {cart.map((item: CartItem) => (
               <div key={item._id} className="flex items-center bg-white p-4 rounded-lg shadow-md">
                 <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
                 <div className="flex-grow mx-4">
@@ -179,12 +179,14 @@ export default function CartPage() {
               </div>
 
               <div className="flex justify-between mb-2">
-                <span className="text-gray-600">סה"כ פריטים:</span>
+                {/* תיקון: הוספת &quot; במקום " */}
+                <span className="text-gray-600">סה&quot;כ פריטים:</span>
                 <span className="font-medium">{totalItems}</span>
               </div>
               <hr className="my-4" />
               <div className="flex justify-between text-xl font-bold mb-4">
-                <span>סה"כ לתשלום:</span>
+                {/* תיקון: הוספת &quot; במקום " */}
+                <span>סה&quot;כ לתשלום:</span>
                 <span>₪{totalPrice.toFixed(2)}</span>
               </div>
               

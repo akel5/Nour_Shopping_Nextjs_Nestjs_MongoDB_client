@@ -1,4 +1,3 @@
-// nour-shop-client/components/ProductModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';

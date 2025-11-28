@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Edit, Trash2, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import ProductModal from '../../components/ProductModal'; // 1. ייבוא המודל
+import ProductModal from '../../components/ProductModal';
 
 // --- טיפוסים ---
 interface Product {
@@ -98,13 +98,13 @@ export default function CollectionPage() {
         if (!response.ok) throw new Error('שליפת המוצרים נכשלה');
         const data = await response.json();
         setProducts(data);
-      } catch (err: unknown) { // 1. משנים ל-unknown
-  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
-    setError(err.message);
-  } else {
-    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
-  }
-} finally {
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('אירעה שגיאה לא צפויה');
+        }
+      } finally {
         setIsLoading(false);
       }
     };
@@ -148,13 +148,13 @@ export default function CollectionPage() {
       setProducts(products.map(p => p._id === productId ? savedProduct : p));
       handleCloseModal();
 
-    } catch (err: unknown) { // 1. משנים ל-unknown
-  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
-    setError(err.message);
-  } else {
-    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
-  }
-} finally {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('אירעה שגיאה לא צפויה');
+      }
+    } finally {
       setIsModalLoading(false);
     }
   };
@@ -170,8 +170,13 @@ export default function CollectionPage() {
         if (!response.ok) throw new Error('המחיקה נכשלה');
         setProducts(products.filter(p => p._id !== productId));
         alert('המוצר נמחק בהצלחה');
-      } catch (err: any) {
-        alert(`שגיאה במחיקה: ${err.message}`);
+      } catch (err: unknown) {
+        // תיקון: שימוש ב-unknown ו-instanceof Error
+        if (err instanceof Error) {
+          alert(`שגיאה במחיקה: ${err.message}`);
+        } else {
+          alert('שגיאה במחיקה: אירעה שגיאה לא צפויה');
+        }
       }
     }
   };

@@ -32,16 +32,17 @@ export default function AboutPage() {
             Get in Touch
           </h2>
           <p className="text-lg text-charcoal text-center mb-8">
-            For any questions, inquiries, styling advice, or just to say hello – we're here.
+            {/* --- התיקון כאן: שינוי we're ל-we&apos;re --- */}
+            For any questions, inquiries, styling advice, or just to say hello – we&apos;re here.
           </p>
           
           <div className="bg-white p-8 rounded-lg shadow-md max-w-lg mx-auto border border-gray-200">
             <div className="flex items-center mb-4">
-              <User className="text-accent mr-3" size={20} /> {/* 2. שינוי מ-ml ל-mr */}
+              <User className="text-accent mr-3" size={20} />
               <span className="text-lg text-charcoal font-medium">Nour Fares</span>
             </div>
             <div className="flex items-center">
-              <Mail className="text-accent mr-3" size={20} /> {/* 2. שינוי מ-ml ל-mr */}
+              <Mail className="text-accent mr-3" size={20} />
               <Link 
                 href="mailto:nourhadi12@icloud.com" 
                 className="text-lg text-accent hover:underline"
