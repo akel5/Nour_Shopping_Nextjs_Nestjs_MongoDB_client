@@ -109,7 +109,8 @@ export default function ProductModal({
           </div>
 
           <div className="mb-4">
-            <label htmlFor="price" className="mb-2 block text-sm font-medium text-gray-600">מחיר (בש"ח)</label>
+            {/* התיקון כאן: החלפת " ב- &quot; */}
+            <label htmlFor="price" className="mb-2 block text-sm font-medium text-gray-600">מחיר (בש&quot;ח)</label>
             <input
               id="price" name="price" type="number"
               value={formData.price} onChange={handleChange}
