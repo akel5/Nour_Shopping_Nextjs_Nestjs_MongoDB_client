@@ -36,9 +36,13 @@ export default function RegisterPage() {
       alert('ההרשמה הצליחה! אנא התחבר.');
       router.push('/login'); // מעביר לעמוד ההתחברות
 
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+    } catch (err: unknown) { // 1. משנים ל-unknown
+  if (err instanceof Error) { // 2. בודקים שזו אכן שגיאה
+    setError(err.message);
+  } else {
+    setError('אירעה שגיאה לא צפויה'); // 3. גיבוי למקרה קיצון
+  }
+} finally {
       setIsLoading(false);
     }
   };
