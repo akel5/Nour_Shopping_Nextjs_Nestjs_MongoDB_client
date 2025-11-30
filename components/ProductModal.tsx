@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-// הטיפוסים שהקומפוננטה מקבלת
+// טיפוסים
 interface ProductFormData {
   name: string;
   description: string;
@@ -11,14 +11,19 @@ interface ProductFormData {
   categoryName: string;
 }
 
-// הטיפוס המלא של מוצר, כולל ID (יכול להיות null אם זה מוצר חדש)
 interface Product extends ProductFormData {
   _id: string | null;
 }
 
+// טיפוס לקטגוריה (עבור ה-Dropdown)
+interface Category {
+  _id: string;
+  name: string;
+}
+
 interface ProductModalProps {
-  productToEdit: Product | null; // אם null - זה מצב הוספה. אם יש אובייקט - זה מצב עריכה
-  categoryName: string; // שם הקטגוריה, למילוי אוטומטי
+  productToEdit: Product | null;
+  categoryName: string; // קטגוריית ברירת המחדל
   onClose: () => void;
   onSave: (productData: ProductFormData, productId: string | null) => void;
   isLoading: boolean;
@@ -31,19 +36,36 @@ export default function ProductModal({
   onSave,
   isLoading,
 }: ProductModalProps) {
-  // מצב פנימי לניהול שדות הטופס
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     description: '',
     imageUrl: '',
     price: 0,
-    categoryName: categoryName, // ממלא אוטומטית את שם הקטגוריה
+    categoryName: categoryName,
   });
 
-  // אפקט שרץ כשהקומפוננטה נטענת
+  // משתנה לשמירת רשימת הקטגוריות
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // 1. שליפת רשימת הקטגוריות בטעינת המודל
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error('Failed to load categories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // מילוי הטופס בעת עריכה
   useEffect(() => {
     if (productToEdit) {
-      // אם זה מצב עריכה, מלא את הטופס בנתונים הקיימים
       setFormData({
         name: productToEdit.name,
         description: productToEdit.description,
@@ -51,15 +73,17 @@ export default function ProductModal({
         price: productToEdit.price,
         categoryName: productToEdit.categoryName,
       });
+    } else {
+      // אם זה מוצר חדש, וודא שהקטגוריה ההתחלתית מוגדרת
+      setFormData(prev => ({ ...prev, categoryName: categoryName }));
     }
-  }, [productToEdit]); // ירוץ רק כשה-productToEdit משתנה
+  }, [productToEdit, categoryName]);
 
-  // פונקציה גנרית לעדכון שדה בטופס
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) : value, // המר למספר אם זה שדה המחיר
+      [name]: name === 'price' ? parseFloat(value) : value,
     }));
   };
 
@@ -78,6 +102,31 @@ export default function ProductModal({
         </h2>
         
         <form onSubmit={handleSubmit}>
+          {/* --- בחירת קטגוריה (חדש) --- */}
+          <div className="mb-4">
+            <label htmlFor="categoryName" className="mb-2 block text-sm font-medium text-gray-600">קטגוריה</label>
+            <select
+              id="categoryName"
+              name="categoryName"
+              value={formData.categoryName}
+              onChange={handleChange}
+              required
+              className="w-full rounded-md border border-gray-300 p-3 bg-white"
+            >
+              <option value="" disabled>בחר קטגוריה</option>
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <option key={cat._id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))
+              ) : (
+                // במקרה שהקטגוריות לא נטענו, נציג לפחות את הקטגוריה הנוכחית כאופציה
+                <option value={categoryName}>{categoryName}</option>
+              )}
+            </select>
+          </div>
+
           <div className="mb-4">
             <label htmlFor="name" className="mb-2 block text-sm font-medium text-gray-600">שם המוצר</label>
             <input
@@ -109,7 +158,6 @@ export default function ProductModal({
           </div>
 
           <div className="mb-4">
-            {/* התיקון כאן: החלפת " ב- &quot; */}
             <label htmlFor="price" className="mb-2 block text-sm font-medium text-gray-600">מחיר (בש&quot;ח)</label>
             <input
               id="price" name="price" type="number"
@@ -118,12 +166,6 @@ export default function ProductModal({
               className="w-full rounded-md border border-gray-300 p-3"
             />
           </div>
-
-          <input
-            type="hidden"
-            name="categoryName"
-            value={formData.categoryName}
-          />
 
           <div className="mt-8 flex items-center justify-between">
             <button
