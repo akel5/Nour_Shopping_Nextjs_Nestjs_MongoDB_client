@@ -5,14 +5,14 @@ import AddCategoryModal from '../components/AddCategoryModal';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 
-// 1. הגדרת טיפוס אחיד (תואם ל-MongoDB)
+// 1. הגדרת טיפוס אחיד
 interface Category {
-  _id: string; // שינינו מ-id ל-_id (מחרוזת)
+  _id: string;
   name: string;
   imageUrl: string;
 }
 
-// 2. קטגוריות ברירת המחדל (המרנו ל-_id מחרוזת)
+// 2. קטגוריות ברירת המחדל
 const initialCategories: Category[] = [
   { _id: '1', name: 'לבית ולגינה', imageUrl: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=500&q=80' },
   { _id: '2', name: 'אופנה ולבוש', imageUrl: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500&q=80' },
@@ -35,7 +35,6 @@ const CategoryCard = ({ category }: { category: Category }) => (
 );
 
 export default function HomePage() {
-  // מתחילים עם הקטגוריות הקבועות
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,26 +45,54 @@ export default function HomePage() {
   // 3. שליפת קטגוריות מהשרת ומיזוג עם הקבועות
   useEffect(() => {
     const fetchCategories = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      
+      if (!apiUrl) {
+        console.error('חסרה הגדרת NEXT_PUBLIC_API_URL');
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
-        if (!res.ok) throw new Error('Failed to fetch');
-        const serverCategories = await res.json();
+        console.log('Fetching categories from:', `${apiUrl}/categories`);
         
-        // כאן אנחנו מחברים: קטגוריות קבועות + קטגוריות מהשרת
+        const res = await fetch(`${apiUrl}/categories`);
+        
+        if (!res.ok) {
+          console.error(`Failed to fetch categories. Status: ${res.status}`);
+          // אם הסטטוס הוא 404, זה אומר שהשרת לא מכיר את הנתיב (צריך לעדכן את השרת)
+          return;
+        }
+        
+        const serverCategories = await res.json();
+        console.log('Categories received from server:', serverCategories);
+        
         setCategories([...initialCategories, ...serverCategories]);
-      } catch (err) {
-        console.error(err);
+
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error('Error fetching categories:', err.message);
+        } else {
+          console.error('Unknown error fetching categories');
+        }
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchCategories();
   }, []);
 
-  // 4. הוספת קטגוריה חדשה (שמירה בשרת ועדכון מקומי)
+  // 4. הוספת קטגוריה
   const handleAddCategory = async (newCategory: { name: string; logoUrl: string }) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      alert('שגיאה: חסרה כתובת שרת');
+      return;
+    }
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
+      const res = await fetch(`${apiUrl}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,17 +104,23 @@ export default function HomePage() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to create category');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server error: ${res.status}`);
+      }
       
       const savedCategory = await res.json();
       
-      // הוספה לרשימה הקיימת
       setCategories((prev) => [...prev, savedCategory]);
       setIsModalOpen(false);
-      alert('הקטגוריה נוספה בהצלחה!');
+      alert('הקטגוריה נוספה בהצלחה ונשמרה!');
 
-    } catch (err) {
-      alert('שגיאה בהוספת קטגוריה');
+    } catch (err: unknown) {
+      let msg = 'שגיאה בהוספת קטגוריה';
+      if (err instanceof Error) {
+        msg += `: ${err.message}`;
+      }
+      alert(msg);
       console.error(err);
     }
   };
@@ -121,7 +154,6 @@ export default function HomePage() {
                 )}
             </div>
             
-            {/* מציגים את הקטגוריות (תמיד יהיו לפחות ה-3 הקבועות) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {categories.map((cat) => (
                   <CategoryCard key={cat._id} category={cat} />
