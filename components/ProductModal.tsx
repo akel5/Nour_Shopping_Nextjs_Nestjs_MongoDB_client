@@ -21,6 +21,13 @@ interface Category {
   name: string;
 }
 
+// 1. הגדרת הקטגוריות הקבועות (כדי שיופיעו גם אם ה-DB ריק)
+const initialCategories: Category[] = [
+  { _id: '1', name: 'לבית ולגינה' },
+  { _id: '2', name: 'אופנה ולבוש' },
+  { _id: '3', name: 'כלי מטבח' },
+];
+
 interface ProductModalProps {
   productToEdit: Product | null;
   categoryName: string; // קטגוריית ברירת המחדל
@@ -44,17 +51,27 @@ export default function ProductModal({
     categoryName: categoryName,
   });
 
-  // משתנה לשמירת רשימת הקטגוריות
-  const [categories, setCategories] = useState<Category[]>([]);
+  // משתנה לשמירת רשימת הקטגוריות (מתחיל עם הקבועות)
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
 
-  // 1. שליפת רשימת הקטגוריות בטעינת המודל
+  // 1. שליפת רשימת הקטגוריות בטעינת המודל ומיזוג
   useEffect(() => {
     const fetchCategories = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) return;
+
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
+        const res = await fetch(`${apiUrl}/categories`);
         if (res.ok) {
-          const data = await res.json();
-          setCategories(data);
+          const serverCategories = await res.json();
+          
+          // מיזוג חכם: קטגוריות קבועות + קטגוריות מהשרת (תוך מניעת כפילויות לפי שם)
+          const allCategories = [...initialCategories, ...serverCategories];
+          const uniqueCategories = Array.from(
+            new Map(allCategories.map(item => [item.name, item])).values()
+          );
+          
+          setCategories(uniqueCategories);
         }
       } catch (err) {
         console.error('Failed to load categories', err);
@@ -102,7 +119,7 @@ export default function ProductModal({
         </h2>
         
         <form onSubmit={handleSubmit}>
-          {/* --- בחירת קטגוריה (חדש) --- */}
+          {/* --- בחירת קטגוריה --- */}
           <div className="mb-4">
             <label htmlFor="categoryName" className="mb-2 block text-sm font-medium text-gray-600">קטגוריה</label>
             <select
@@ -121,7 +138,6 @@ export default function ProductModal({
                   </option>
                 ))
               ) : (
-                // במקרה שהקטגוריות לא נטענו, נציג לפחות את הקטגוריה הנוכחית כאופציה
                 <option value={categoryName}>{categoryName}</option>
               )}
             </select>
