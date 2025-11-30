@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// 1. ייבוא הטיפוס CartItem
 import { useCart, CartItem } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 
-// הגדרת סוגי התשלום
 enum PaymentMethod {
   CASH = 'cash_on_delivery',
   CARD = 'credit_card',
@@ -32,7 +30,6 @@ export default function CartPage() {
     }
   }, [user]);
 
-  // הוספת הטיפוס : CartItem
   const totalPrice = cart.reduce((total, item: CartItem) => total + item.price * item.quantity, 0);
 
   const handleCreateOrder = async (e: React.FormEvent) => {
@@ -79,7 +76,6 @@ export default function CartPage() {
         alert('ההזמנה נוצרה בהצלחה!');
       }
 
-      // clearCart(); // מבוצע בדף ההצלחה
       router.push('/order-success'); 
 
     } catch (err: unknown) {
@@ -96,11 +92,12 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto p-4 py-10">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">עגלת הקניות שלך</h1>
+      {/* כותרת ראשית שחורה ובולטת */}
+      <h1 className="text-3xl font-bold text-black mb-8">עגלת הקניות שלך</h1>
 
       {cart.length === 0 ? (
         <div className="text-center">
-          <p className="text-xl text-gray-600 mb-4">העגלה שלך ריקה.</p>
+          <p className="text-xl text-gray-800 mb-4">העגלה שלך ריקה.</p>
           <Link href="/collection">
             <button className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700">
               התחל קניות
@@ -112,11 +109,13 @@ export default function CartPage() {
           
           <div className="md:col-span-2 space-y-4">
             {cart.map((item: CartItem) => (
-              <div key={item._id} className="flex items-center bg-white p-4 rounded-lg shadow-md">
+              <div key={item._id} className="flex items-center bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
                 <div className="flex-grow mx-4">
-                  <h3 className="text-lg font-semibold">{item.name}</h3>
-                  <p className="text-gray-600">₪{item.price}</p>
+                  {/* שם המוצר בולט */}
+                  <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
+                  {/* מחיר המוצר כהה */}
+                  <p className="text-gray-900 font-medium">₪{item.price}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
@@ -124,9 +123,9 @@ export default function CartPage() {
                     min="1"
                     value={item.quantity}
                     onChange={(e) => updateQuantity(item._id, parseInt(e.target.value))}
-                    className="w-16 p-1 border border-gray-300 rounded-md text-center"
+                    className="w-16 p-1 border border-gray-300 rounded-md text-center text-gray-900 font-medium"
                   />
-                  <button type="button" onClick={() => removeFromCart(item._id)} className="text-red-500 hover:text-red-700">
+                  <button type="button" onClick={() => removeFromCart(item._id)} className="text-red-600 hover:text-red-800">
                     <Trash2 size={20} />
                   </button>
                 </div>
@@ -135,12 +134,13 @@ export default function CartPage() {
           </div>
 
           <div className="md:col-span-1">
-            <div className="bg-white p-6 rounded-lg shadow-md sticky top-28">
-              <h2 className="text-2xl font-semibold mb-4">סיכום הזמנה</h2>
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 sticky top-28">
+              {/* כותרת סיכום שחורה */}
+              <h2 className="text-2xl font-bold text-black mb-4">סיכום הזמנה</h2>
               
               <div className="space-y-4 mb-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-bold text-gray-900 mb-1">
                     כתובת אימייל
                   </label>
                   <input
@@ -148,11 +148,11 @@ export default function CartPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border border-gray-400 p-2 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="phone" className="block text-sm font-bold text-gray-900 mb-1">
                     טלפון
                   </label>
                   <input
@@ -160,17 +160,17 @@ export default function CartPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border border-gray-400 p-2 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-bold text-gray-900 mb-1">
                     אמצעי תשלום
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border border-gray-400 p-2 text-gray-900 bg-white"
                   >
                     <option value={PaymentMethod.CASH}>מזומן לשליח / נציג יחזור אליי</option>
                     <option value={PaymentMethod.CARD}>כרטיס אשראי (בקרוב)</option>
@@ -179,25 +179,23 @@ export default function CartPage() {
               </div>
 
               <div className="flex justify-between mb-2">
-                {/* תיקון: הוספת &quot; במקום " */}
-                <span className="text-gray-600">סה&quot;כ פריטים:</span>
-                <span className="font-medium">{totalItems}</span>
+                <span className="text-gray-900 font-medium">סה&quot;כ פריטים:</span>
+                <span className="font-bold text-gray-900">{totalItems}</span>
               </div>
-              <hr className="my-4" />
+              <hr className="my-4 border-gray-300" />
               <div className="flex justify-between text-xl font-bold mb-4">
-                {/* תיקון: הוספת &quot; במקום " */}
-                <span>סה&quot;כ לתשלום:</span>
-                <span>₪{totalPrice.toFixed(2)}</span>
+                <span className="text-black">סה&quot;כ לתשלום:</span>
+                <span className="text-black">₪{totalPrice.toFixed(2)}</span>
               </div>
               
               {error && (
-                <p className="mb-4 text-center text-sm text-red-600">{error}</p>
+                <p className="mb-4 text-center text-sm text-red-600 font-bold">{error}</p>
               )}
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 disabled:bg-gray-400"
+                className="w-full bg-green-600 text-white py-3 rounded-md font-bold hover:bg-green-700 disabled:bg-gray-400"
               >
                 {isLoading ? 'מבצע הזמנה...' : 'בצע הזמנה'}
               </button>
