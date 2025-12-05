@@ -7,7 +7,6 @@ import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import ProductModal from '../../../components/ProductModal';
 
-// --- טיפוסים ---
 interface Product {
   _id: string;
   name: string;
@@ -17,7 +16,6 @@ interface Product {
   categoryName: string;
 }
 
-// קומפוננטה מקוצרת למוצר (לשליחה לעגלה)
 interface CartProduct {
   _id: string;
   name: string;
@@ -25,7 +23,6 @@ interface CartProduct {
   imageUrl: string;
 }
 
-// --- קומפוננטת כרטיס מוצר ---
 const ProductCard = ({ 
   product, 
   isAdmin, 
@@ -72,25 +69,31 @@ const ProductCard = ({
   );
 };
 
-
-// --- קומפוננטת העמוד הראשית ---
 export default function CategoryPage({ params }: { params: { name: string } }) {
-  const { user, token } = useAuth();
+  // הוספנו את logout מה-AuthContext לטיפול ב-401
+  const { user, token, logout } = useAuth();
   const { addToCart } = useCart();
   const isAdmin = user?.role === 'admin' || user?.role === 'subadmin';
   const categoryName = decodeURIComponent(params.name);
 
-  // מצבים לניהול
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // טעינת עמוד
-  const [isModalLoading, setIsModalLoading] = useState(false); // טעינה של המודל
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // מצבים לניהול המודל
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
-  // שליפת מוצרים מה-API
+  // פונקציית עזר לטיפול בשגיאות 401
+  const handleAuthError = (status: number) => {
+    if (status === 401) {
+      alert('פג תוקף ההתחברות. אנא התחבר מחדש.');
+      logout();
+      return true;
+    }
+    return false;
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -113,7 +116,6 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
     fetchProducts();
   }, [categoryName]);
 
-  // --- פונקציות לטיפול במודל ---
   const handleOpenAddModal = () => {
     setProductToEdit(null);
     setIsModalOpen(true);
@@ -129,7 +131,6 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
     setProductToEdit(null);
   };
 
-  // --- פונקציות API (שמירה ומחיקה) ---
   const handleSaveProduct = async (formData: Omit<Product, '_id' | 'categoryName'> & { categoryName: string }, productId: string | null) => {
     setIsModalLoading(true);
     setError(null);
@@ -151,6 +152,9 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         body: JSON.stringify(formData),
       });
 
+      // בדיקת אימות
+      if (handleAuthError(response.status)) return;
+
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.message || 'הפעולה נכשלה');
@@ -167,7 +171,6 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
       handleCloseModal();
 
     } catch (err: unknown) {
-      // תיקון: שימוש ב-unknown ו-instanceof Error
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -185,11 +188,14 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` },
         });
+
+        // בדיקת אימות
+        if (handleAuthError(response.status)) return;
+
         if (!response.ok) throw new Error('המחיקה נכשלה');
         setProducts(products.filter(p => p._id !== productId));
         alert('המוצר נמחק בהצלחה');
       } catch (err: unknown) {
-        // תיקון: שימוש ב-unknown ו-instanceof Error
         if (err instanceof Error) {
           alert(`שגיאה במחיקה: ${err.message}`);
         } else {
@@ -199,10 +205,8 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
     }
   };
 
-  // --- JSX ---
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* הצגה מותנית של המודל */}
       {isModalOpen && (
         <ProductModal
           productToEdit={productToEdit}
@@ -213,9 +217,7 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
         />
       )}
     
-      {/* גוף העמוד */}
       <main className="container mx-auto p-4 py-10">
-        {/* כותרת וכפתור הוספה */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-800">{categoryName}</h1>
           {isAdmin ? (
@@ -226,7 +228,6 @@ export default function CategoryPage({ params }: { params: { name: string } }) {
           ) : ( <div></div> )}
         </div>
 
-        {/* רשת המוצרים */}
         {isLoading && <p className="text-center">טוען מוצרים...</p>}
         {error && <p className="text-center text-red-600 bg-red-100 p-4 rounded-md">{error}</p>}
         {!isLoading && !error && (
